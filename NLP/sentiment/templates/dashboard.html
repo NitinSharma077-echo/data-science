@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Sentiment Intelligence</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+
+<body class="bg-gradient-to-br from-indigo-50 via-white to-purple-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-all duration-500">
+
+<!-- NAVBAR -->
+<nav class="fixed w-full backdrop-blur-md bg-white/70 dark:bg-gray-900/70 border-b border-gray-200 dark:border-gray-700 z-50">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+    <h1 class="text-2xl font-extrabold text-indigo-600 dark:text-indigo-400">
+      AI Sentiment Intelligence
+    </h1>
+
+    <button id="theme-toggle"
+      class="px-4 py-2 rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition">
+      Toggle Theme
+    </button>
+  </div>
+</nav>
+
+<div class="pt-28 max-w-7xl mx-auto px-6 pb-20">
+
+  <!-- HERO -->
+  <section class="text-center mb-16">
+    <h2 class="text-4xl font-extrabold text-gray-800 dark:text-white mb-4">
+      Transform Customer Feedback into Insights
+    </h2>
+    <p class="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+      AI-powered sentiment classification with analytics dashboard and NPS scoring.
+    </p>
+  </section>
+
+  <!-- INPUT -->
+  <div class="bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl p-8 rounded-3xl shadow-xl mb-16 border border-gray-200 dark:border-gray-700">
+    <form action="/analyze" method="POST" class="flex flex-col gap-6">
+      <textarea name="text" rows="3"
+        placeholder="Enter customer review..."
+        class="w-full p-4 rounded-xl border focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700 dark:text-white resize-none"
+        required></textarea>
+
+      <button type="submit"
+        class="self-end px-8 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold shadow-lg hover:scale-105 transition">
+        Analyze
+      </button>
+    </form>
+  </div>
+
+  <!-- STATS + CHART SECTION -->
+  <div class="grid lg:grid-cols-2 gap-12 mb-20 items-center">
+
+    <!-- STATS -->
+    <div class="grid grid-cols-2 gap-6">
+
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg text-center">
+        <p class="text-sm text-gray-500">Total Reviews</p>
+        <p class="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
+          {{ stats.total_reviews }}
+        </p>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg text-center">
+        <p class="text-sm text-gray-500">NPS Score</p>
+        <p class="text-3xl font-bold text-purple-600 dark:text-purple-400">
+          {{ stats.nps_score }}
+        </p>
+      </div>
+
+      <div class="bg-green-50 dark:bg-green-900 p-6 rounded-2xl shadow text-center">
+        <p class="text-sm text-green-600 font-semibold">Positive</p>
+        <p class="text-2xl font-bold text-green-700 dark:text-green-300">
+          {{ stats.positive_count }} ({{ stats.positive_pct }}%)
+        </p>
+      </div>
+
+      <div class="bg-red-50 dark:bg-red-900 p-6 rounded-2xl shadow text-center">
+        <p class="text-sm text-red-600 font-semibold">Negative</p>
+        <p class="text-2xl font-bold text-red-700 dark:text-red-300">
+          {{ stats.negative_count }} ({{ stats.negative_pct }}%)
+        </p>
+      </div>
+
+      <div class="bg-yellow-50 dark:bg-yellow-900 p-6 rounded-2xl shadow text-center col-span-2">
+        <p class="text-sm text-yellow-600 font-semibold">Neutral</p>
+        <p class="text-2xl font-bold text-yellow-700 dark:text-yellow-300">
+          {{ stats.neutral_count }} ({{ stats.neutral_pct }}%)
+        </p>
+      </div>
+
+    </div>
+
+    <!-- COMPACT DOUGHNUT CHART -->
+    <div class="flex justify-center">
+      <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl w-80 h-80">
+        <h3 class="text-lg font-semibold mb-4 text-center text-gray-700 dark:text-gray-200">
+          Sentiment Distribution
+        </h3>
+        <div class="relative w-64 h-64 mx-auto">
+          <canvas id="sentimentChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RECENT REVIEWS -->
+  <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl">
+    <h2 class="text-2xl font-bold mb-6 text-gray-800 dark:text-white">
+      Recent Reviews
+    </h2>
+
+    {% if stats.recent_reviews %}
+      <div class="space-y-6">
+        {% for review in stats.recent_reviews %}
+        <div class="p-6 rounded-xl border hover:shadow-md transition
+          {% if review.sentiment == 'Positive' %} border-green-400 bg-green-50 dark:bg-green-900/40
+          {% elif review.sentiment == 'Negative' %} border-red-400 bg-red-50 dark:bg-red-900/40
+          {% else %} border-yellow-400 bg-yellow-50 dark:bg-yellow-900/40
+          {% endif %}">
+
+          <div class="flex justify-between items-center mb-2">
+            <span class="font-semibold text-lg">
+              {{ review.sentiment }} | {{ review.nps }}
+            </span>
+            <span class="text-sm text-gray-400">
+              {{ review.timestamp }}
+            </span>
+          </div>
+
+          <p class="text-gray-700 dark:text-gray-200 mb-2">
+            {{ review.text }}
+          </p>
+
+          <p class="text-sm text-gray-500 dark:text-gray-400">
+            Confidence: {{ review.confidence }}% |
+            Topics: {{ review.topics | join(', ') }}
+          </p>
+
+        </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-gray-400 text-center py-6">
+        No reviews analyzed yet.
+      </p>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- CHART SCRIPT -->
+<script>
+  const ctx = document.getElementById('sentimentChart');
+
+  new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Positive', 'Neutral', 'Negative'],
+      datasets: [{
+        data: [
+          {{ stats.positive_count }},
+          {{ stats.neutral_count }},
+          {{ stats.negative_count }}
+        ],
+        backgroundColor: ['#16a34a', '#eab308', '#dc2626'],
+        borderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            boxWidth: 12,
+            padding: 15
+          }
+        }
+      }
+    }
+  });
+
+  document.getElementById('theme-toggle').addEventListener('click', () => {
+    document.documentElement.classList.toggle('dark');
+  });
+</script>
+
+</body>
+</html>

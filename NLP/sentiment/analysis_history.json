@@ -1,0 +1,26 @@
+[
+    {
+        "text": "Hello",
+        "sentiment": "Neutral",
+        "emotion": "Neutral",
+        "confidence": 75.58,
+        "topics": [
+            "General"
+        ],
+        "nps": "Passive",
+        "intent": "Complaint",
+        "timestamp": "Feb 22, 2026"
+    },
+    {
+        "text": "hello buddy",
+        "sentiment": "Neutral",
+        "emotion": "Neutral",
+        "confidence": 75.58,
+        "topics": [
+            "General"
+        ],
+        "nps": "Passive",
+        "intent": "Complaint",
+        "timestamp": "Feb 22, 2026"
+    }
+]

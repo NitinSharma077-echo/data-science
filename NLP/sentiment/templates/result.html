@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Analysis Result</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-indigo-100 to-purple-200 min-h-screen flex items-center justify-center">
+
+<div class="bg-white p-10 rounded-2xl shadow-xl w-full max-w-lg text-center">
+
+    <h1 class="text-3xl font-bold text-indigo-600 mb-6">
+        Sentiment Result
+    </h1>
+
+    <p class="mb-4 text-gray-600">
+        <strong>Text:</strong> {{ text }}
+    </p>
+
+    <div class="mb-4">
+        <span class="text-xl font-bold
+            {% if sentiment == 'Positive' %} text-green-600
+            {% elif sentiment == 'Negative' %} text-red-600
+            {% else %} text-yellow-600 {% endif %}">
+            {{ sentiment }}
+        </span>
+    </div>
+
+    <p class="mb-4 text-gray-500">
+        Confidence: {{ confidence }}%
+    </p>
+
+    <p class="mb-6 text-gray-500">
+        Emotion: {{ emotion }}
+    </p>
+
+    <a href="/"
+       class="px-6 py-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition">
+       Back to Dashboard
+    </a>
+
+</div>
+
+</body>
+</html>
