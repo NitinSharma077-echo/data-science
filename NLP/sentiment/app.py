@@ -1,11 +1,10 @@
 import re
 import os
-import json
 import pickle
 import numpy as np
 import nltk
 from datetime import datetime
-from flask import Flask, render_template, request, jsonify, redirect
+from flask import Flask, render_template, request, jsonify
 from nltk.stem import PorterStemmer
 from nltk.corpus import stopwords
 
@@ -15,10 +14,8 @@ from nltk.corpus import stopwords
 
 app = Flask(__name__)
 
-# Ensure stopwords exist
 nltk.download('stopwords')
 
-# Initialize NLP tools
 port_stem = PorterStemmer()
 stop_words = set(stopwords.words('english'))
 
@@ -48,31 +45,7 @@ with open(vectorizer_path, "rb") as f:
 print("Model loaded successfully!")
 
 # --------------------------------------------------
-# DATA STORAGE (Persistent History)
-# --------------------------------------------------
-
-DATA_FILE = os.path.join(BASE_DIR, "analysis_history.json")
-
-if not os.path.exists(DATA_FILE):
-    with open(DATA_FILE, "w") as f:
-        json.dump([], f)
-
-
-def load_history():
-    with open(DATA_FILE, "r") as f:
-        return json.load(f)
-
-
-def save_to_history(entry):
-    history = load_history()
-    history.append(entry)
-    with open(DATA_FILE, "w") as f:
-        json.dump(history, f, indent=4)
-
-
-# --------------------------------------------------
-# TEXT PREPROCESSING
-# MUST MATCH TRAINING
+# TEXT PREPROCESSING (Must Match Training)
 # --------------------------------------------------
 
 def preprocess_text(text):
@@ -80,7 +53,6 @@ def preprocess_text(text):
     text = text.lower().split()
     text = [port_stem.stem(word) for word in text if word not in stop_words]
     return ' '.join(text)
-
 
 # --------------------------------------------------
 # TOPIC EXTRACTION
@@ -92,10 +64,8 @@ def extract_topics(text):
         'quality', 'price', 'packaging',
         'shipping', 'return', 'mobile app'
     ]
-
     found = [k.title() for k in keywords if k in text.lower()]
     return found if found else ['General']
-
 
 # --------------------------------------------------
 # NPS CALCULATION
@@ -109,55 +79,24 @@ def calculate_nps(sentiment):
     else:
         return "Detractor"
 
-
-# --------------------------------------------------
-# STATISTICS CALCULATION
-# --------------------------------------------------
-
-def calculate_stats():
-    history = load_history()
-
-    if not history:
-        return {
-            'total_reviews': 0,
-            'positive_count': 0,
-            'neutral_count': 0,
-            'negative_count': 0,
-            'positive_pct': 0,
-            'neutral_pct': 0,
-            'negative_pct': 0,
-            'nps_score': 0,
-            'recent_reviews': []
-        }
-
-    total = len(history)
-    positive = sum(1 for x in history if x['sentiment'] == 'Positive')
-    neutral = sum(1 for x in history if x['sentiment'] == 'Neutral')
-    negative = sum(1 for x in history if x['sentiment'] == 'Negative')
-
-    promoters = sum(1 for x in history if x['nps'] == 'Promoter')
-    detractors = sum(1 for x in history if x['nps'] == 'Detractor')
-
-    return {
-        'total_reviews': total,
-        'positive_count': positive,
-        'neutral_count': neutral,
-        'negative_count': negative,
-        'positive_pct': round((positive/total)*100, 2),
-        'neutral_pct': round((neutral/total)*100, 2),
-        'negative_pct': round((negative/total)*100, 2),
-        'nps_score': round(((promoters - detractors)/total)*100, 1),
-        'recent_reviews': list(reversed(history[-5:]))
-    }
-
-
 # --------------------------------------------------
 # ROUTES
 # --------------------------------------------------
 
 @app.route('/')
 def home():
-    stats = calculate_stats()
+    # Empty dashboard on first load
+    stats = {
+        'total_reviews': 0,
+        'positive_count': 0,
+        'neutral_count': 0,
+        'negative_count': 0,
+        'positive_pct': 0,
+        'neutral_pct': 0,
+        'negative_pct': 0,
+        'nps_score': 0,
+        'recent_reviews': []
+    }
     return render_template('dashboard.html', stats=stats)
 
 
@@ -173,14 +112,14 @@ def analyze():
         vectorized = vectorizer.transform([processed_text])
         prediction = model.predict(vectorized)[0]
 
-        # Confidence
+        # Confidence calculation
         try:
             proba = model.predict_proba(vectorized)[0]
             confidence = round(np.max(proba) * 100, 2)
         except:
             confidence = 85.0
 
-        # Label mapping (Adjust if needed)
+        # Sentiment mapping
         if prediction == 2:
             sentiment = "Positive"
             emotion = "Happy"
@@ -205,12 +144,20 @@ def analyze():
             'timestamp': datetime.now().strftime('%b %d, %Y')
         }
 
-        save_to_history(result)
+        # Fresh stats for ONLY this review
+        stats = {
+            'total_reviews': 1,
+            'positive_count': 1 if sentiment == "Positive" else 0,
+            'neutral_count': 1 if sentiment == "Neutral" else 0,
+            'negative_count': 1 if sentiment == "Negative" else 0,
+            'positive_pct': 100 if sentiment == "Positive" else 0,
+            'neutral_pct': 100 if sentiment == "Neutral" else 0,
+            'negative_pct': 100 if sentiment == "Negative" else 0,
+            'nps_score': 100 if sentiment == "Positive" else -100 if sentiment == "Negative" else 0,
+            'recent_reviews': [result]
+        }
 
-        if request.is_json:
-            return jsonify(result), 200
-
-        return redirect('/')
+        return render_template('dashboard.html', stats=stats)
 
     except Exception as e:
         print("Error:", str(e))
@@ -222,10 +169,8 @@ def health():
     return {
         "status": "OK",
         "model_loaded": True,
-        "vectorizer_loaded": True,
-        "total_records": len(load_history())
+        "vectorizer_loaded": True
     }
-
 
 # --------------------------------------------------
 # MAIN
