@@ -1,0 +1,65 @@
+{
+  "trained_at": "2026-05-03T10:49:56.599352+00:00",
+  "dataset": "E:\\Github AI\\data science\\data-science\\NLP\\training.1600000.processed.noemoticon.csv",
+  "rows": 1600000,
+  "test_size": 0.2,
+  "accuracy": 0.8252,
+  "f1": 0.82675,
+  "confusion_matrix": [
+    [
+      130601,
+      29399
+    ],
+    [
+      26537,
+      133463
+    ]
+  ],
+  "classification_report": {
+    "0": {
+      "precision": 0.8311229619824613,
+      "recall": 0.81625625,
+      "f1-score": 0.8236225239485649,
+      "support": 160000.0
+    },
+    "1": {
+      "precision": 0.8194852083358918,
+      "recall": 0.83414375,
+      "f1-score": 0.826749509078182,
+      "support": 160000.0
+    },
+    "accuracy": 0.8252,
+    "macro avg": {
+      "precision": 0.8253040851591765,
+      "recall": 0.8251999999999999,
+      "f1-score": 0.8251860165133735,
+      "support": 320000.0
+    },
+    "weighted avg": {
+      "precision": 0.8253040851591766,
+      "recall": 0.8252,
+      "f1-score": 0.8251860165133734,
+      "support": 320000.0
+    }
+  },
+  "model": {
+    "type": "LogisticRegression",
+    "solver": "saga",
+    "max_iter": 150,
+    "C": 2.0
+  },
+  "vectorizer": {
+    "type": "TfidfVectorizer",
+    "max_features": 120000,
+    "actual_features": 120000,
+    "ngram_range": [
+      1,
+      2
+    ],
+    "min_df": 5,
+    "max_df": 0.95,
+    "sublinear_tf": true,
+    "preprocessor": "sentiment_app.nlp.preprocessing.normalize_text"
+  },
+  "elapsed_seconds": 178.65
+}

@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Sentiment Studio</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=4" />
+  </head>
+  <body>
+    <div id="root">
+      <main class="app-shell">
+        <section class="panel boot-screen">
+          <span class="eyebrow">NLP Flask App</span>
+          <h1>Sentiment Studio</h1>
+          <p>Loading the sentiment dashboard...</p>
+        </section>
+      </main>
+    </div>
+    <noscript>This app needs JavaScript enabled.</noscript>
+    <script defer src="{{ url_for('static', filename='js/app.js') }}?v=4"></script>
+  </body>
+</html>
